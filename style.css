@@ -1,0 +1,146 @@
+
+:root {
+    --color-pcb-dark: #050708; /* Matte deepest black-substrate */
+    --color-pcb-light: #0c0e0f; /* Secondary dark projection plane */
+    --color-silkscreen: #00ff66; /* Vibrant neon green from reference */
+    --color-hologram-cyan: #00f3ff; /* Glowing cyan coordinate highlight */
+    --color-silkscreen-glow: rgba(0, 255, 102, 0.2);
+    --color-holo-glow: rgba(0, 243, 255, 0.2);
+}
+
+body {
+    font-family: 'JetBrains Mono', monospace;
+    background-color: var(--color-pcb-dark);
+    color: #d1e7dd;
+    overflow-x: hidden;
+    background-image: radial-gradient(circle at center, var(--color-pcb-light) 0%, var(--color-pcb-dark) 100%);
+}
+
+/* Set Persian typography when dir="rtl" is active */
+html[dir="rtl"] body, html[dir="rtl"] input, html[dir="rtl"] textarea {
+    font-family: 'Vazirmatn', sans-serif;
+}
+
+.font-silkscreen {
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.1em;
+}
+
+html[dir="rtl"] .font-silkscreen {
+    font-family: 'Vazirmatn', sans-serif;
+    letter-spacing: normal;
+}
+
+/* Hologram Symmetrical outer frame mimicking reference image */
+.pcb-outer-frame {
+    border: 2px solid var(--color-silkscreen);
+    box-shadow: 0 0 25px var(--color-silkscreen-glow), inset 0 0 15px var(--color-silkscreen-glow);
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+}
+
+/* Scanline Overlay for diegetic crt hardware feel */
+body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
+    z-index: 9999;
+    background-size: 100% 4px;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* PCB Terminal & IC Module Styling */
+.ic-chip {
+    background: linear-gradient(135deg, #0a0d0e 0%, #030506 100%);
+    border: 1px solid rgba(0, 255, 102, 0.18);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.01);
+    border-radius: 8px;
+}
+
+.glow-text {
+    text-shadow: 0 0 8px var(--color-silkscreen);
+}
+
+.glow-text-cyan {
+    text-shadow: 0 0 8px var(--color-hologram-cyan);
+}
+
+.glow-border {
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+    border-color: var(--color-silkscreen);
+}
+
+.glow-border-cyan {
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
+    border-color: var(--color-hologram-cyan);
+}
+
+/* PCB pin layouts (using logical coordinates start/end instead of left/right) */
+.solder-pad-row::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    width: 8px;
+    opacity: 0.6;
+}
+
+html[dir="ltr"] .solder-pad-row::before {
+    left: -8px;
+    background-image: repeating-linear-gradient(to bottom, var(--color-silkscreen) 0px, var(--color-silkscreen) 4px, transparent 4px, transparent 12px);
+}
+
+html[dir="rtl"] .solder-pad-row::before {
+    right: -8px;
+    background-image: repeating-linear-gradient(to bottom, var(--color-silkscreen) 0px, var(--color-silkscreen) 4px, transparent 4px, transparent 12px);
+}
+
+/* Cyber Hologram Glitch Animation */
+@keyframes holo-flicker {
+    0%, 19.999%, 22%, 62.999%, 64%, 100% {
+        opacity: 0.99;
+        filter: hue-rotate(0deg);
+    }
+    20%, 21.999%, 63%, 63.999% {
+        opacity: 0.4;
+        filter: hue-rotate(90deg) saturate(1.5);
+    }
+}
+
+.holo-flicker-anim {
+    animation: holo-flicker 5s infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-pcb-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #002209;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-silkscreen);
+}
+
+.view-panel {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.view-panel.hidden {
+    display: none !important;
+    opacity: 0;
+    transform: translateY(10px);
+}

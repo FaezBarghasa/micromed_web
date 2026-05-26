@@ -1,0 +1,14 @@
+[
+  {
+    "name": "MICROMED",
+    "description": "A high-fidelity, retro-futuristic UI for a fictional embedded systems company.",
+    "technologies": ["HTML", "CSS", "JavaScript", "Tailwind CSS"],
+    "features": [
+      "Interactive 3D hologram viewer",
+      "Simulated terminal startup sequence",
+      "Dynamic content loading and routing",
+      "Multi-language support (EN/FA)",
+      "Diegetic audio feedback system"
+    ]
+  }
+]
