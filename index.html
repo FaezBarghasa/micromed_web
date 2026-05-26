@@ -1,1393 +1,454 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MICROMED // 3D PCB Holographic Gateway & Embedded Contractors</title>
-    <!-- Tailwind CSS for structural layout -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- High-fidelity tech typography for English and Persian -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Share+Tech+Mono&family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MICROMED // PCB System Architecture & Embedded Contractors</title>
+  <!-- Tailwind CSS for structural layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- High-fidelity tech typography for English and Persian -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Share+Tech+Mono&family=Vazirmatn:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --color-pcb-dark: #050708;       /* Matte deepest black-substrate */
-            --color-pcb-light: #0c0e0f;      /* Secondary dark projection plane */
-            --color-silkscreen: #00ff66;     /* Vibrant neon green from reference */
-            --color-hologram-cyan: #00f3ff;  /* Glowing cyan coordinate highlight */
-            --color-silkscreen-glow: rgba(0, 255, 102, 0.2);
-            --color-holo-glow: rgba(0, 243, 255, 0.2);
-        }
-
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: var(--color-pcb-dark);
-            color: #d1e7dd;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at center, var(--color-pcb-light) 0%, var(--color-pcb-dark) 100%);
-        }
-
-        /* Set Persian typography when dir="rtl" is active */
-        html[dir="rtl"] body, html[dir="rtl"] input, html[dir="rtl"] textarea {
-            font-family: 'Vazirmatn', sans-serif;
-        }
-
-        .font-silkscreen {
-            font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 0.1em;
-        }
-
-        html[dir="rtl"] .font-silkscreen {
-            font-family: 'Vazirmatn', sans-serif;
-            letter-spacing: normal;
-        }
-
-        /* Hologram Symmetrical outer frame mimicking reference image */
-        .pcb-outer-frame {
-            border: 2px solid var(--color-silkscreen);
-            box-shadow: 0 0 25px var(--color-silkscreen-glow), inset 0 0 15px var(--color-silkscreen-glow);
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-        }
-
-        /* Scanline Overlay for diegetic crt hardware feel */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
-            z-index: 9999;
-            background-size: 100% 4px;
-            pointer-events: none;
-            opacity: 0.8;
-        }
-
-        /* PCB Terminal & IC Module Styling */
-        .ic-chip {
-            background: linear-gradient(135deg, #0a0d0e 0%, #030506 100%);
-            border: 1px solid rgba(0, 255, 102, 0.18);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.01);
-            border-radius: 8px;
-        }
-
-        .glow-text {
-            text-shadow: 0 0 8px var(--color-silkscreen);
-        }
-
-        .glow-text-cyan {
-            text-shadow: 0 0 8px var(--color-hologram-cyan);
-        }
-
-        .glow-border {
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
-            border-color: var(--color-silkscreen);
-        }
-
-        .glow-border-cyan {
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
-            border-color: var(--color-hologram-cyan);
-        }
-
-        /* PCB pin layouts (using logical coordinates start/end instead of left/right) */
-        .solder-pad-row::before {
-            content: '';
-            position: absolute;
-            top: 15%; bottom: 15%;
-            width: 8px;
-            opacity: 0.6;
-        }
-
-        html[dir="ltr"] .solder-pad-row::before {
-            left: -8px;
-            background-image: repeating-linear-gradient(to bottom, var(--color-silkscreen) 0px, var(--color-silkscreen) 4px, transparent 4px, transparent 12px);
-        }
-
-        html[dir="rtl"] .solder-pad-row::before {
-            right: -8px;
-            background-image: repeating-linear-gradient(to bottom, var(--color-silkscreen) 0px, var(--color-silkscreen) 4px, transparent 4px, transparent 12px);
-        }
-
-        /* Cyber Hologram Glitch Animation */
-        @keyframes holo-flicker {
-            0%, 19.999%, 22%, 62.999%, 64%, 100% { opacity: 0.99; filter: hue-rotate(0deg); }
-            20%, 21.999%, 63%, 63.999% { opacity: 0.4; filter: hue-rotate(90deg) saturate(1.5); }
-        }
-        .holo-flicker-anim {
-            animation: holo-flicker 5s infinite;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--color-pcb-dark);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #002209;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-silkscreen);
-        }
-
-        .view-panel {
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-        .view-panel.hidden {
-            display: none !important;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-    </style>
-</head>
-<body class="relative min-h-screen p-3 sm:p-6 md:p-8 selection:bg-emerald-500 selection:text-black">
-
-<!-- High-Fidelity Dense Static Background Motherboard Canvas -->
-<canvas id="pcbBackgroundCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
-
-<!-- SYSTEM STARTUP TERMINAL LOADER -->
-<div id="startupScreen" class="fixed inset-0 bg-[#020405] z-50 flex flex-col justify-between p-8 font-silkscreen text-[#00ff66]">
-    <div class="space-y-2">
-        <div class="text-xl glow-text font-bold" id="start-title">MICROMED MASTER CONTROL PROTOCOLS // READY</div>
-        <div class="text-xs text-emerald-950">--------------------------------------------------</div>
-        <div id="startupLog" class="text-xs space-y-1 h-[70vh] overflow-y-auto">
-            <div>&gt; Mapping spatial substrate trace configurations...</div>
-        </div>
+    <link rel="stylesheet" href="./style.css">
     </div>
-    <div class="flex flex-col sm:flex-row justify-between text-xs border-t border-emerald-950/60 pt-4 gap-2">
-        <div id="start-target">TARGET ARCHITECTURE: ULTRA-GLOW MINIMAL DESIGNATORS</div>
-        <div class="animate-pulse" id="start-load">BOOTSTRAPPING MAINBOARD REGISTERS [99%]</div>
-    </div>
+  </div>
+  <div class="flex flex-col sm:flex-row justify-between text-xs border-t border-emerald-950/60 pt-4 gap-2">
+    <div id="start-target">TARGET ARCHITECTURE: ULTRA-GLOW MINIMAL DESIGNATORS</div>
+    <div class="animate-pulse" id="start-load">BOOTSTRAPPING MAINBOARD REGISTERS [99%]</div>
+  </div>
 </div>
 
 <!-- MAIN INTERACTIVE WORKSPACE IN ENCLOSED MAINBOARD ENVELOPE -->
-<div class="relative z-10 max-w-7xl mx-auto flex flex-col gap-6 p-4 sm:p-6 md:p-8 pcb-outer-frame bg-black/50 backdrop-blur-md min-h-[calc(100vh-4rem)]">
+<div class="relative z-10 max-w-7xl mx-auto flex flex-col gap-6 p-4 sm:p-6 md:p-8 pcb-outer-frame bg-black/40 backdrop-blur-sm min-h-[calc(100vh-4rem)]">
 
-    <!-- MOTHERBOARD MASTER CONTROL UNIT (HEADER) -->
-    <header class="ic-chip p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden solder-pad-row">
-        <div class="absolute -top-12 -left-12 w-24 h-24 border border-emerald-500/10 rounded-full pointer-events-none"></div>
-        <div class="absolute top-2 right-2 text-[8px] text-emerald-600/60 font-mono">⊕ FIDUCIAL_A</div>
+  <!-- MOTHERBOARD MASTER CONTROL UNIT (HEADER) -->
+  <header class="ic-chip p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative overflow-hidden solder-pad-row">
+    <div class="absolute -top-12 -left-12 w-24 h-24 border border-emerald-500/10 rounded-full pointer-events-none"></div>
+    <div class="absolute top-2 right-2 text-[8px] text-emerald-600/60 font-mono">⊕ FIDUCIAL_A</div>
 
-        <div class="flex items-center gap-4 relative z-10">
-            <div class="relative flex-shrink-0 cursor-pointer group" onclick="playHardwareTone(880, 0.08)">
-                <!-- Chevron logo inside core chip -->
-                <div class="w-16 h-16 border-2 border-[#00ff66] bg-[#07090a] flex flex-col items-center justify-center font-silkscreen text-[11px] text-[#00ff66] group-hover:bg-[#00ff66]/10 transition-colors shadow-[0_0_15px_rgba(0,255,102,0.3)]">
-                    <svg class="w-6 h-6 text-[#00ff66] animate-pulse mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path>
-                    </svg>
-                    <span class="text-[8px] text-[#00ff66] font-bold">MM-U1</span>
-                </div>
-                <!-- Virtual pin-outs -->
-                <div class="absolute -top-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                <div class="absolute -top-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                <div class="absolute -top-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                <div class="absolute -bottom-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                <div class="absolute -bottom-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                <div class="absolute -bottom-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-            </div>
-
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="font-silkscreen text-3xl font-black text-white tracking-widest glow-text">MICROMED</h1>
-                    <span class="text-[9px] font-mono border border-emerald-500/30 bg-emerald-950/40 text-[#00ff66] px-2 py-0.5 font-bold animate-pulse">3D_REV_5.0</span>
-                </div>
-                <p data-key="header-desc" class="text-[10px] text-emerald-500/70 tracking-widest uppercase font-mono mt-1 font-bold">EMBEDDED HARDWARE CONTRACTING CELL // SYSTEM ARCHITECTURE BUS</p>
-            </div>
+    <div class="flex items-center gap-4 relative z-10">
+      <div class="relative flex-shrink-0 cursor-pointer group" onclick="playHardwareTone(880, 0.08)">
+        <!-- Chevron logo inside core chip -->
+        <div class="w-16 h-16 border-2 border-[#00ff66] bg-[#07090a] flex flex-col items-center justify-center font-silkscreen text-[11px] text-[#00ff66] group-hover:bg-[#00ff66]/10 transition-colors">
+          <svg class="w-6 h-6 text-[#00ff66] animate-pulse mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path>
+          </svg>
+          <span class="text-[8px] text-[#00ff66] font-bold">MM-U1</span>
         </div>
+        <!-- Virtual pin-outs -->
+        <div class="absolute -top-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+        <div class="absolute -top-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+        <div class="absolute -top-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+        <div class="absolute -bottom-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+        <div class="absolute -bottom-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+        <div class="absolute -bottom-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
+      </div>
 
-        <!-- Onboard System Bus Diagnostics / Audio Toggle / Language Toggle -->
-        <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-mono w-full lg:w-auto lg:border-s border-emerald-900/60 lg:ps-6">
-            <!-- LANG JUMPER SWITCH -->
-            <div>
-                <span class="text-emerald-700 block text-[9px] font-bold">LANG_JUMPER</span>
-                <button id="langToggle" onclick="toggleLanguage()" class="text-[#00ff66] hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-emerald-500/50 bg-[#00ff66]/10 px-2 py-0.5 glow-border">
-                    [ JUMPER: EN ]
-                </button>
-            </div>
-            <div>
-                <span class="text-emerald-700 block text-[9px] font-bold">SYS_BUS_LINK</span>
-                <span id="sysLinkStatus" data-key="sys-bus-link-status" class="text-[#00ff66] font-medium flex items-center gap-1.5">
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-silkscreen text-3xl font-black text-white tracking-widest glow-text">MICROMED</h1>
+          <span class="text-[9px] font-mono border border-emerald-500/30 bg-emerald-950/40 text-[#00ff66] px-2 py-0.5 font-bold animate-pulse">REV_3.12</span>
+        </div>
+        <p data-key="header-desc" class="text-[10px] text-emerald-500/70 tracking-widest uppercase font-mono mt-1 font-bold">EMBEDDED HARDWARE CONTRACTING CELL // SYSTEM ARCHITECTURE BUS</p>
+      </div>
+    </div>
+
+    <!-- Onboard System Bus Diagnostics / Audio Toggle / Language Toggle -->
+    <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-mono w-full lg:w-auto lg:border-s border-emerald-900/60 lg:ps-6">
+      <!-- LANG JUMPER SWITCH -->
+      <div>
+        <span class="text-emerald-700 block text-[9px] font-bold">LANG_JUMPER</span>
+        <button id="langToggle" onclick="toggleLanguage()" class="text-[#00ff66] hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-emerald-500/50 bg-[#00ff66]/10 px-2 py-0.5 glow-border">
+          [ JUMPER: EN ]
+        </button>
+      </div>
+      <div>
+        <span class="text-emerald-700 block text-[9px] font-bold">SYS_BUS_LINK</span>
+        <span data-key="sys-bus-link-status" class="text-[#00ff66] font-medium flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 bg-[#00ff66] rounded-full inline-block animate-pulse"></span>
                         IMPEDANCE_MATCHED
                     </span>
-            </div>
-            <div>
-                <span class="text-emerald-700 block text-[9px] font-bold">SOUND_ENGINE</span>
-                <button id="synthToggle" onclick="toggleMainboardAudio()" class="text-[#00ff66] hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-emerald-950/60 bg-emerald-950/20 px-2 py-0.5">
-                    [🔈 AUDIO_MUTED]
-                </button>
-            </div>
-            <div>
-                <span class="text-emerald-700 block text-[9px] font-bold">ACTIVE_TELEMETRY</span>
-                <span id="firmwareFreq" class="text-[#00f3ff] font-bold glow-text-cyan">LINKING_SECURE...</span>
-            </div>
+      </div>
+      <div>
+        <span class="text-emerald-700 block text-[9px] font-bold">SOUND_ENGINE</span>
+        <button id="synthToggle" onclick="toggleMainboardAudio()" class="text-[#00ff66] hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-emerald-950/60 bg-emerald-950/20 px-2 py-0.5">
+          [🔈 AUDIO_MUTED]
+        </button>
+      </div>
+      <div>
+        <span class="text-emerald-700 block text-[9px] font-bold">ACTIVE_TELEMETRY</span>
+        <span id="firmwareFreq" class="text-white">LINKING_SECURE...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- SYSTEM BUS CONTROL (NAVIGATION SWITCHBOARD) -->
+  <nav class="ic-chip p-2 flex flex-wrap gap-2 relative">
+    <div data-key="nav-register-label" class="absolute top-1 start-2 text-[8px] text-emerald-700 font-mono uppercase font-bold">SYSTEM_BUS_ROUTING_REGISTER</div>
+    <div class="w-full h-2"></div>
+
+    <button onclick="routeTo('addr-gateway')" id="btn-addr-gateway" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-500 bg-emerald-950/30 text-[#00ff66] text-xs font-silkscreen tracking-widest hover:bg-[#00ff66]/10 transition-all text-start flex items-center justify-between group">
+      <span data-key="nav-gateway">[0x00] CORE_GATEWAY</span>
+      <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
+    </button>
+    <button onclick="routeTo('addr-identity')" id="btn-addr-identity" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
+      <span data-key="nav-identity">[0x01] ORG_IDENTITY</span>
+      <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
+    </button>
+    <button onclick="routeTo('addr-directory')" id="btn-addr-directory" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
+      <span data-key="nav-directory">[0x02] HW_DIRECTORY</span>
+      <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
+    </button>
+    <button onclick="routeTo('addr-uplink')" id="btn-addr-uplink" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
+      <span data-key="nav-uplink">[0x03] SECURE_UPLINK</span>
+      <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
+    </button>
+  </nav>
+
+  <!-- ==================== ADDR_0x00: CORE GATEWAY (INDEX) ==================== -->
+  <div id="addr-gateway" class="view-panel grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- MODULE U2: CORE PROCESSOR NODE (HERO BLOCK) -->
+    <section class="lg:col-span-8 ic-chip p-6 md:p-8 relative overflow-hidden solder-pad-row">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">DESIGNATOR // U2 // CORE</div>
+      <div class="absolute top-0 start-0 w-2 h-2 border-t border-s border-emerald-500/40"></div>
+      <div class="absolute top-0 end-0 w-2 h-2 border-t border-e border-emerald-500/40"></div>
+      <div class="absolute bottom-0 start-0 w-2 h-2 border-b border-s border-emerald-500/40"></div>
+      <div class="absolute bottom-0 end-0 w-2 h-2 border-b border-e border-emerald-500/40"></div>
+
+      <div class="space-y-6 mt-4">
+        <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00ff66] border-b border-emerald-950/80 pb-2 w-full">
+          <span data-key="gateway-matrix-prefix">[!] HARDWARE VALIDATION MATRIX</span> <span data-key="gateway-matrix-suffix">REGISTER ADDR_0x00 ONLINE</span>
         </div>
-    </header>
 
-    <!-- SYSTEM BUS CONTROL (NAVIGATION SWITCHBOARD) -->
-    <nav class="ic-chip p-2 flex flex-wrap gap-2 relative">
-        <div data-key="nav-register-label" class="absolute top-1 start-2 text-[8px] text-emerald-700 font-mono uppercase font-bold">SYSTEM_BUS_ROUTING_REGISTER</div>
-        <div class="w-full h-2"></div>
+        <h2 data-key="gateway-hero-title" class="font-silkscreen text-2xl md:text-4xl text-white leading-tight font-bold">
+          Architecting safe silicon logic for mission-critical medical & laboratory environments.
+        </h2>
 
-        <button onclick="routeTo('addr-gateway')" id="btn-addr-gateway" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-500 bg-emerald-950/30 text-[#00ff66] text-xs font-silkscreen tracking-widest hover:bg-[#00ff66]/10 transition-all text-start flex items-center justify-between group">
-            <span data-key="nav-gateway">[0x00] CORE_GATEWAY</span>
-            <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
-        </button>
-        <button onclick="routeTo('addr-identity')" id="btn-addr-identity" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
-            <span data-key="nav-identity">[0x01] ORG_IDENTITY</span>
-            <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
-        </button>
-        <button onclick="routeTo('addr-directory')" id="btn-addr-directory" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
-            <span data-key="nav-directory">[0x02] HW_DIRECTORY</span>
-            <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
-        </button>
-        <button onclick="routeTo('addr-uplink')" id="btn-addr-uplink" class="flex-1 min-w-[140px] py-3 px-4 border border-emerald-950 text-emerald-600 text-xs font-silkscreen tracking-widest hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all text-start flex items-center justify-between group">
-            <span data-key="nav-uplink">[0x03] SECURE_UPLINK</span>
-            <span class="text-[9px] opacity-40 group-hover:opacity-100 transition-opacity">►</span>
-        </button>
-    </nav>
+        <p data-key="gateway-hero-desc" class="text-xs md:text-sm text-emerald-100/70 leading-relaxed font-light">
+          We are elite electronic engineering contractors specializing in the end-to-end design, testing, and production optimization of multi-layer controller boards. Our team does not build consumer hardware; we develop the vital brain components (harnessing safe, bare-metal Rust firmware) for original equipment manufacturers (OEMs) producing precision temperature-controlled health incubators, food-safety diagnostic ovens, and high-RPM mixing engines.
+        </p>
 
-    <!-- ==================== ADDR_0x00: CORE GATEWAY (INDEX) ==================== -->
-    <div id="addr-gateway" class="view-panel grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- MODULE U2: CORE PROCESSOR NODE (HERO BLOCK) -->
-        <section class="lg:col-span-7 ic-chip p-6 md:p-8 relative overflow-hidden solder-pad-row">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">DESIGNATOR // U2 // CORE</div>
-            <div class="absolute top-0 start-0 w-2 h-2 border-t border-s border-emerald-500/40"></div>
-            <div class="absolute top-0 end-0 w-2 h-2 border-t border-e border-emerald-500/40"></div>
-            <div class="absolute bottom-0 start-0 w-2 h-2 border-b border-s border-emerald-500/40"></div>
-            <div class="absolute bottom-0 end-0 w-2 h-2 border-b border-e border-emerald-500/40"></div>
-
-            <div class="space-y-6 mt-4">
-                <div class="inline-flex items-center gap-2 text-xs font-bold text-[#00ff66] border-b border-emerald-950/80 pb-2 w-full">
-                    <span data-key="gateway-matrix-prefix">[!] HARDWARE VALIDATION MATRIX</span> <span data-key="gateway-matrix-suffix">REGISTER ADDR_0x00 ONLINE</span>
-                </div>
-
-                <h2 data-key="gateway-hero-title" class="font-silkscreen text-2xl md:text-3xl text-white leading-tight font-bold">
-                    Architecting safe silicon logic for mission-critical medical & laboratory environments.
-                </h2>
-
-                <p data-key="gateway-hero-desc" class="text-xs text-emerald-100/70 leading-relaxed font-light">
-                    We are elite electronic engineering contractors specializing in the end-to-end design, testing, and production optimization of multi-layer controller boards. Our team does not build consumer hardware; we develop the vital brain components (harnessing safe, bare-metal Rust firmware) for original equipment manufacturers (OEMs) producing precision temperature-controlled health incubators, food-safety diagnostic ovens, and high-RPM mixing engines.
-                </p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-emerald-950/80">
-                    <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(440, 0.05)">
-                        <div class="absolute top-1 end-1 text-[8px] text-emerald-700">R23</div>
-                        <span data-key="spec-label-thermal" class="text-[9px] text-emerald-600 font-bold block">THERMO_MATRIX</span>
-                        <span data-key="spec-val-thermal" class="text-xs font-semibold text-white tracking-wider font-silkscreen">0.0001°C RESOLUTION</span>
-                        <span data-key="spec-desc-thermal" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; Multi-channel cold-junction</span>
-                    </div>
-                    <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(554.37, 0.05)">
-                        <div class="absolute top-1 end-1 text-[8px] text-emerald-700">C14</div>
-                        <span data-key="spec-label-velocity" class="text-[9px] text-emerald-600 font-bold block">VELOCITY_VECTOR</span>
-                        <span data-key="spec-val-velocity" class="text-xs font-semibold text-white tracking-wider font-silkscreen">3-PHASE SENSORLESS FOC</span>
-                        <span data-key="spec-desc-velocity" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; Closed-loop torque profiling</span>
-                    </div>
-                    <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(659.25, 0.05)">
-                        <div class="absolute top-1 end-1 text-[8px] text-emerald-700">J9</div>
-                        <span data-key="spec-label-isolation" class="text-[9px] text-emerald-600 font-bold block">ISOLATION_BARRIER</span>
-                        <span data-key="spec-val-isolation" class="text-xs font-semibold text-white tracking-wider font-silkscreen">GALVANIC ISOLATION 3.75kV</span>
-                        <span data-key="spec-desc-isolation" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; IEC 60601-1 Medical compliant</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- MODULE U5: INTERACTIVE 3D HOLOGRAM EXPLORER VIEWPORT (5 cols) -->
-        <section class="lg:col-span-5 ic-chip p-6 relative flex flex-col justify-between border-cyan-500/20 bg-black/80">
-            <div class="absolute top-2 right-3 text-[9px] text-cyan-500 font-mono tracking-widest">HOLOGRAPHIC // 3D_CAD_VIEWPORT</div>
-            <div class="absolute top-2 start-2 text-[8px] text-[#00f3ff] font-mono">⊕ PROJECTOR_ACTIVE</div>
-
-            <div class="space-y-4 mt-2">
-                <h3 data-key="holo-viewport-title" class="font-silkscreen text-lg font-bold text-white tracking-wider flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 bg-[#00f3ff] inline-block animate-pulse shadow-[0_0_8px_#00f3ff]"></span> 3D HOLO-CAD VIEWER
-                </h3>
-
-                <p data-key="holo-viewport-desc" class="text-[10px] text-emerald-400 font-mono">Drag cursor inside screen to orbit structural model vectors:</p>
-
-                <!-- Interactive 3D Projection Canvas -->
-                <div class="relative w-full h-60 bg-[#040708] border border-cyan-500/20 rounded overflow-hidden cursor-grab active:cursor-grabbing">
-                    <canvas id="hologramViewer3D" class="w-full h-full"></canvas>
-
-                    <!-- HUD overlay elements -->
-                    <div class="absolute bottom-2 start-2 text-[8px] font-mono text-cyan-400/80 bg-black/60 px-1 py-0.5 rounded">
-                        <span id="holoModelName">MM-BLUE-PILL</span> (ACTIVE)
-                    </div>
-                    <div class="absolute top-2 end-2 text-[8px] font-mono text-cyan-500/70">
-                        Yaw: <span id="holoYaw">0.00</span> | Pitch: <span id="holoPitch">0.00</span>
-                    </div>
-                    <!-- Depth volumetric grids -->
-                    <div class="absolute inset-0 border border-cyan-500/5 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(0,243,255,0.05),transparent_70%)]"></div>
-                </div>
-
-                <!-- Interactive Holographic Component Toggles -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    <button onclick="selectHoloModel('blue-pill')" id="btn-holo-blue-pill" class="py-1.5 px-2 text-[9px] font-mono border border-cyan-500 bg-cyan-950/20 text-[#00f3ff] font-bold">BLUE PILL</button>
-                    <button onclick="selectHoloModel('esp32')" id="btn-holo-esp32" class="py-1.5 px-2 text-[9px] font-mono border border-emerald-900 text-emerald-600 hover:border-cyan-500 hover:text-cyan-400">ESP32-S3</button>
-                    <button onclick="selectHoloModel('triac')" id="btn-holo-triac" class="py-1.5 px-2 text-[9px] font-mono border border-emerald-900 text-emerald-600 hover:border-cyan-500 hover:text-cyan-400">BT136 TRIAC</button>
-                    <button onclick="selectHoloModel('transistor')" id="btn-holo-transistor" class="py-1.5 px-2 text-[9px] font-mono border border-emerald-900 text-emerald-600 hover:border-cyan-500 hover:text-cyan-400">TRANSISTOR</button>
-                    <button onclick="selectHoloModel('diode')" id="btn-holo-diode" class="py-1.5 px-2 text-[9px] font-mono border border-emerald-900 text-emerald-600 hover:border-cyan-500 hover:text-cyan-400">DIODE Barrier</button>
-                    <button onclick="toggleHoloOrbit()" id="holoOrbitBtn" class="py-1.5 px-2 text-[9px] font-mono border border-cyan-500/30 bg-black text-[#00f3ff]">AUTO_ROT: ON</button>
-                </div>
-            </div>
-
-            <div class="text-[9px] text-cyan-600 font-mono mt-4 pt-3 border-t border-cyan-950/40 flex justify-between">
-                <span>GRID_SCALE: 1:1 UNIT</span>
-                <span>VOLUMETRIC: VERIFIED</span>
-            </div>
-        </section>
-
-        <!-- INTERACTIVE DIAGNOSTIC SCHEMATIC GRAPHIC -->
-        <section class="lg:col-span-12 ic-chip p-6 relative overflow-hidden">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">DIAGRAM // SYSTEM_GRID_VIEW</div>
-            <div class="absolute bottom-2 right-2 text-[8px] text-emerald-600/40 font-mono">⊕ REF_GRID_02</div>
-
-            <div class="mb-4 mt-2">
-                <h3 data-key="flows-header" class="font-silkscreen text-lg font-bold text-white tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 bg-[#00ff66] inline-block animate-pulse"></span> SYSTEM ARCHITECTURE FLOWS
-                </h3>
-                <p data-key="flows-desc" class="text-xs text-emerald-500/70">Click hardware nodes below to execute diagnostic address switching.</p>
-            </div>
-
-            <!-- Custom circuit block mapping -->
-            <div class="border border-emerald-950 bg-black/40 p-6 flex flex-col md:flex-row items-center justify-around gap-6 relative rounded">
-                <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(0,255,102,0.15),transparent_70%)]"></div>
-
-                <div onclick="routeTo('addr-identity')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
-                    <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_01</div>
-                    <span data-key="flows-btn1" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">ORGANIZATIONAL LAB</span>
-                    <span data-key="flows-btn1-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Core design protocols</span>
-                </div>
-
-                <div class="hidden md:block text-emerald-800 text-lg flip-direction">━━━━━━━━►</div>
-
-                <div onclick="routeTo('addr-directory')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
-                    <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_02</div>
-                    <span data-key="flows-btn2" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">PROPRIETARY PRODUCTS</span>
-                    <span data-key="flows-btn2-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Technical datasheets</span>
-                </div>
-
-                <div class="hidden md:block text-emerald-800 text-lg flip-direction">━━━━━━━━►</div>
-
-                <div onclick="routeTo('addr-uplink')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
-                    <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_03</div>
-                    <span data-key="flows-btn3" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">SECURE CONNECTIONS</span>
-                    <span data-key="flows-btn3-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Fast contracting bus</span>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== ADDR_0x01: ORGANIZATIONAL IDENTITY (ABOUT) ==================== -->
-    <div id="addr-identity" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- MISSION-CRITICAL PHILOSOPHY CHIP -->
-        <section class="lg:col-span-6 ic-chip p-6 md:p-8 relative overflow-hidden">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MODULE // PHILOSOPHY</div>
-
-            <div class="space-y-6 mt-4">
-                <h3 data-key="about-hero-header" class="font-silkscreen text-xl font-bold text-white tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 bg-[#00ff66] inline-block animate-pulse"></span> DETERMINISTIC SECURITY & SAFETY BY DESIGN
-                </h3>
-
-                <div id="about-hero-body" class="border-s-2 border-emerald-500/30 ps-4 py-2 space-y-4 text-xs md:text-sm text-emerald-100/80 leading-relaxed font-light">
-                    <!-- Translatable paragraphs managed by Javascript -->
-                </div>
-
-                <div class="bg-black/40 border border-emerald-950 p-4 rounded text-[11px] font-mono text-emerald-500/80 space-y-2">
-                    <div data-key="about-codes-header" class="text-white font-bold">THE MICROMED COMPLIANCE CODES:</div>
-                    <div data-key="about-codes-1">✓ Complete lack of garbage-collector latency vectors.</div>
-                    <div data-key="about-codes-2">✓ Strict zero-cost hardware boundary abstractions.</div>
-                    <div data-key="about-codes-3">✓ Full galvanic isolation separation standards across all sensitive buses.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- INTERACTIVE TEAM ARCHITECTURE BLUEPRINT -->
-        <section class="lg:col-span-6 ic-chip p-6 md:p-8 relative flex flex-col justify-between">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MODULE // TEAM_SCHEMATIC</div>
-
-            <div class="space-y-4 mt-4">
-                <h3 data-key="about-team-title" class="font-silkscreen text-xl font-bold text-white tracking-widest">
-                    TEAM METASTATE BLUEPRINT
-                </h3>
-                <p data-key="about-team-desc" class="text-xs text-emerald-500/70 leading-relaxed">
-                    Like an integrated circuit, our organizational architecture operates via synchronized, deterministic processing blocks. Click any functional group node below to interrogate credentials.
-                </p>
-
-                <!-- Interactive Team Nodes -->
-                <div class="space-y-3 pt-4">
-                    <div onclick="selectTeamNode('silicon')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
-                        <span data-key="team-cell-1" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_01]: SILICON_DESIGN_NODE</span>
-                        <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
-                    </div>
-                    <div onclick="selectTeamNode('firmware')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
-                        <span data-key="team-cell-2" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_02]: EMBEDDED_RUST_CORE</span>
-                        <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
-                    </div>
-                    <div onclick="selectTeamNode('validation')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
-                        <span data-key="team-cell-3" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_03]: HIL_STRESS_VALIDATION</span>
-                        <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
-                    </div>
-                </div>
-
-                <!-- Dynamic Node Readout -->
-                <div id="teamReadout" class="border border-[#00ff66]/20 bg-[#030504] p-4 rounded text-xs min-h-[100px] font-mono">
-                    <span class="text-emerald-700 block text-[9px] font-bold">U1_CELL_READOUT</span>
-                    <p data-key="team-readout-placeholder" class="text-emerald-100/60 mt-1">Select an organizational cell above to map team pipelines, technical credentials, and active system operations.</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== ADDR_0x02: HARDWARE DIRECTORY (PRODUCTS) ==================== -->
-    <div id="addr-directory" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- DATASHEET SELECTOR MATRIX (LEFT) -->
-        <section class="lg:col-span-4 ic-chip p-6 relative flex flex-col justify-between">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MATRIX // DIRECTORY</div>
-
-            <div class="space-y-6 mt-4">
-                <h3 data-key="dir-spec-title" class="font-silkscreen text-lg font-bold text-white tracking-widest">
-                    SPEC_REGISTERS
-                </h3>
-                <p data-key="dir-spec-desc" class="text-xs text-emerald-500/70">
-                    Query proprietary Micromed hardware blueprints. Select a model register to output high-fidelity data sheets directly from our firmware files:
-                </p>
-
-                <div class="space-y-2 font-mono text-xs">
-                    <button onclick="selectProduct('MM-TC-01')" class="w-full text-start p-3 border border-emerald-500 bg-emerald-950/20 text-[#00ff66] hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-TC-01">
-                        <span>MM-TC-01 THERMAL CARD</span>
-                        <span data-key="dir-status-active" class="text-[9px] text-[#00ff66] font-bold">[ ACTIVE ]</span>
-                    </button>
-                    <button onclick="selectProduct('MM-MC-04')" class="w-full text-start p-3 border border-emerald-950 text-emerald-600 hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-MC-04">
-                        <span>MM-MC-04 MOTOR DRIVER</span>
-                        <span data-key="dir-status-locked" class="text-[9px] text-gray-500">[ LOCKED ]</span>
-                    </button>
-                    <button onclick="selectProduct('MM-ISO-02')" class="w-full text-start p-3 border border-emerald-950 text-emerald-600 hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-ISO-02">
-                        <span>MM-ISO-02 GALVANIC BUS</span>
-                        <span data-key="dir-status-locked" class="text-[9px] text-gray-500">[ LOCKED ]</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="border-t border-emerald-950 pt-4 mt-6 text-[9px] font-mono text-emerald-800">
-                <div>DATASHEETS COMPLIANCE CODE: ISO_13485_MED</div>
-            </div>
-        </section>
-
-        <!-- PROPRIETARY HARDWARE DATASHEET INTERFACE (RIGHT) -->
-        <section class="lg:col-span-8 ic-chip p-6 md:p-8 relative overflow-hidden">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest" id="datasheetDesignator">DATASHEET // MM-TC-01</div>
-
-            <!-- Dynamic Schematic Board visual container -->
-            <div class="border border-[#00ff66]/20 bg-black/60 p-6 rounded space-y-6" id="datasheetContent">
-                <!-- Dynamic datasheet templates are loaded through translations inside updateDatasheet() -->
-            </div>
-        </section>
-    </div>
-
-    <!-- ==================== ADDR_0x03: SECURE UPLINK (CONTACT) ==================== -->
-    <div id="addr-uplink" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- TERMINAL BLOCK INFORMATION -->
-        <section class="lg:col-span-5 ic-chip p-6 relative flex flex-col justify-between">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">INFO // UPLINK_PARAMETERS</div>
-
-            <div class="space-y-4 mt-4">
-                <h3 data-key="uplink-title" class="font-silkscreen text-xl font-bold text-white tracking-widest">
-                    SECURE HARDWARE HANDSHAKE
-                </h3>
-                <p data-key="uplink-desc" class="text-xs text-emerald-100/60 leading-relaxed font-light">
-                    Procurement managers and technical system architects can initiate a direct data bus uplink to request hardware contracting or embedded firmware optimization projects.
-                </p>
-
-                <div class="bg-black/40 border border-emerald-950 p-4 rounded text-[10px] font-mono text-emerald-500/80 space-y-1.5">
-                    <div data-key="uplink-params-header" class="text-[#00ff66] font-bold">ACTIVE TRANSMITTER CHANNEL PARAMS:</div>
-                    <div data-key="uplink-params-1">✓ CONFIG: PGP COMPLIANT ENCRYPTION MATRIX</div>
-                    <div data-key="uplink-params-2">✓ SCHEMATIC DISPATCH TIMELINE: &lt; 24 HOURS</div>
-                    <div data-key="uplink-params-3">✓ TECHNICAL ACCESS CLEARANCE: LEVEL_4 APPROVED</div>
-                </div>
-            </div>
-
-            <div class="border-t border-emerald-950 pt-4 mt-6 text-[9px] font-mono text-emerald-800">
-                <div>SECURE KEY: MM-RSA-4096</div>
-            </div>
-        </section>
-
-        <!-- B2B PROCUREMENT TERMINAL DIRECT FORM -->
-        <section class="lg:col-span-7 ic-chip p-6 relative overflow-hidden">
-            <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">TRANSMITTER // BUS_0x03</div>
-
-            <!-- Circuit tracer visual accent running directly through the layout -->
-            <div class="absolute top-0 left-0 right-0 h-4 bg-[#00ff66]/10 flex justify-around items-center border-b border-emerald-950">
-                <span class="text-[8px] font-mono text-[#00ff66]">[GND]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[TX]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[RX]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[VCC]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[INT]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[I2C_SDA]</span>
-                <span class="text-[8px] font-mono text-[#00ff66]">[I2C_SCL]</span>
-            </div>
-
-            <div class="mt-6">
-                <form id="pcbContractForm" onsubmit="handleContractSubmission(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono relative z-10">
-                    <div>
-                        <label data-key="form-label-company" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">OEM_COMPANY_IDENTIFIER</label>
-                        <input type="text" id="compName" required placeholder="e.g. BIOSYNERGY_CORP" class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950">
-                    </div>
-                    <div>
-                        <label data-key="form-label-email" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">SECURE_COM_ROUTING</label>
-                        <input type="email" id="compEmail" required placeholder="procurement@biosynergy.com" class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950">
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label data-key="form-label-specs" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">BOARD_SPECS_AND_TELEMETRY_PARAMETERS</label>
-                        <textarea id="compSpecs" rows="3" required placeholder="Detail temperature ranges, dynamic torque outputs, target PCB size limits or insulation standards..." class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950 resize-none"></textarea>
-                    </div>
-                    <div class="sm:col-span-2 flex justify-end">
-                        <button id="form-submit-btn" type="submit" class="w-full sm:w-auto bg-[#00ff66]/10 border border-[#00ff66]/40 text-[#00ff66] font-silkscreen font-bold text-xs tracking-widest px-8 py-4 uppercase hover:bg-[#00ff66] hover:text-black transition-all duration-200 glow-border">
-                            ESTABLISH DATA BUS MATRIX //
-                        </button>
-                    </div>
-                </form>
-
-                <!-- SIMULATED FIRMWARE TRANSMISSION PANEL -->
-                <div id="formSuccessMessage" class="hidden absolute inset-0 bg-black/95 flex flex-col justify-between p-6 border border-[#00ff66]">
-                    <div class="space-y-4 font-mono text-xs">
-                        <span data-key="success-headline" class="text-[#00ff66] text-sm font-silkscreen font-bold mb-2 block glow-text">UPLINK PACKET DEPLOYED [🟢]</span>
-                        <div class="bg-black border border-emerald-950 p-4 rounded text-[10px] space-y-1 text-emerald-600">
-                            <div data-key="success-log-1">&gt; Initiating RSA handshakes (MM-4096-B)... SUCCESS</div>
-                            <div data-key="success-log-2">&gt; Compiling specifications block... COMPLETED</div>
-                            <div data-key="success-log-3">&gt; Routing telemetry packets: IP_COM_SECURED</div>
-                            <div data-key="success-log-4">&gt; Data bus written to memory array blocks.</div>
-                        </div>
-                        <p data-key="success-desc" class="text-xs text-emerald-100/70">
-                            Hardware contracting packet received successfully. A systems engineering contractor stands notified to analyze physical parameters.
-                        </p>
-                    </div>
-                    <button onclick="dismissFormNotification()" data-key="success-dismiss" class="text-xs font-mono text-[#00ff66] hover:underline self-start mt-4">[ CLEAR_LOG_REGISTERS ]</button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- FOOTER READOUT DIAGNOSTICS -->
-    <footer class="flex justify-between items-center text-[9px] font-mono text-emerald-700/80 border-t border-emerald-950/60 pt-4 pb-4">
-        <div data-key="footer-text">MICROMED TECHNOLOGY SYSTEMS // CORE MEMORY REG REGISTERS OPERATIONAL</div>
-        <div class="hidden sm:flex gap-6 tracking-wider">
-            <span>VCC: 3.30V [OK]</span>
-            <span>AMB_TEMPERATURE: 23.415°C</span>
-            <span data-key="footer-metric">TRACE_SENSITIVITY: HI-FI</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-emerald-950/80">
+          <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(440, 0.05)">
+            <div class="absolute top-1 end-1 text-[8px] text-emerald-700">R23</div>
+            <span data-key="spec-label-thermal" class="text-[9px] text-emerald-600 font-bold block">THERMO_MATRIX</span>
+            <span data-key="spec-val-thermal" class="text-xs font-semibold text-white tracking-wider font-silkscreen">0.0001°C RESOLUTION</span>
+            <span data-key="spec-desc-thermal" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; Multi-channel cold-junction</span>
+          </div>
+          <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(554.37, 0.05)">
+            <div class="absolute top-1 end-1 text-[8px] text-emerald-700">C14</div>
+            <span data-key="spec-label-velocity" class="text-[9px] text-emerald-600 font-bold block">VELOCITY_VECTOR</span>
+            <span data-key="spec-val-velocity" class="text-xs font-semibold text-white tracking-wider font-silkscreen">3-PHASE SENSORLESS FOC</span>
+            <span data-key="spec-desc-velocity" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; Closed-loop torque profiling</span>
+          </div>
+          <div class="border border-emerald-950 bg-black/40 p-3 relative group cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="playHardwareTone(659.25, 0.05)">
+            <div class="absolute top-1 end-1 text-[8px] text-emerald-700">J9</div>
+            <span data-key="spec-label-isolation" class="text-[9px] text-emerald-600 font-bold block">ISOLATION_BARRIER</span>
+            <span data-key="spec-val-isolation" class="text-xs font-semibold text-white tracking-wider font-silkscreen">GALVANIC ISOLATION 3.75kV</span>
+            <span data-key="spec-desc-isolation" class="text-[8px] text-emerald-500/60 block mt-1 font-mono">&gt; IEC 60601-1 Medical compliant</span>
+          </div>
         </div>
-    </footer>
+      </div>
+    </section>
+
+    <!-- MODULE U3: QUICK SPECS ACCORDION (SMD BLOCK) -->
+    <section class="lg:col-span-4 ic-chip p-6 relative flex flex-col justify-between">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">DESIGNATOR // U3 // STACK</div>
+      <div class="absolute top-2 start-2 text-[10px] text-[#00ff66] font-mono">⊕ TP23</div>
+
+      <div class="space-y-4 mt-2">
+        <h3 data-key="summary-header" class="font-silkscreen text-lg font-bold text-white tracking-wider flex items-center gap-2">
+          <span class="w-2 h-2 bg-[#00ff66] inline-block animate-pulse"></span> HARDWARE SUMMARY
+        </h3>
+        <p data-key="summary-subheader" class="text-[10px] text-emerald-500/70 font-mono">Expand standard architecture pipelines:</p>
+
+        <div class="space-y-2 text-xs">
+          <div class="border border-emerald-950 bg-black/40 p-2 rounded">
+            <div class="flex justify-between items-center cursor-pointer text-[#00ff66] font-medium" onclick="toggleMainboardCap('cap-1')">
+              <span data-key="summary-cap1-title">[REG_01] HIGH-DENSITY INTERCONNECT</span>
+              <span id="cap-1-indicator">+</span>
+            </div>
+            <div id="cap-1" class="hidden mt-2 text-gray-400 ps-4 border-s border-[#00ff66]/20 space-y-1">
+              <p data-key="summary-cap1-desc">Multi-layer high frequency PCB development (up to 12 layers) with micro-vias, blind/buried pathways, and controlled trace impedance preventing high-frequency cross-talk.</p>
+            </div>
+          </div>
+
+          <div class="border border-emerald-950 bg-black/40 p-2 rounded">
+            <div class="flex justify-between items-center cursor-pointer text-[#00ff66] font-medium" onclick="toggleMainboardCap('cap-2')">
+              <span data-key="summary-cap2-title">[REG_02] EMBEDDED RUST FIRMWARE</span>
+              <span id="cap-2-indicator">+</span>
+            </div>
+            <div id="cap-2" class="hidden mt-2 text-gray-400 ps-4 border-s border-[#00ff66]/20 space-y-1">
+              <p data-key="summary-cap2-desc">Bare-metal embedded Rust configurations. Complete memory protection vectors with zero runtime memory manager (no_std architecture), mitigating race conditions.</p>
+            </div>
+          </div>
+
+          <div class="border border-emerald-950 bg-black/40 p-2 rounded">
+            <div class="flex justify-between items-center cursor-pointer text-[#00ff66] font-medium" onclick="toggleMainboardCap('cap-3')">
+              <span data-key="summary-cap3-title">[REG_03] HARSH ENVIRONMENT TESTING</span>
+              <span id="cap-3-indicator">+</span>
+            </div>
+            <div id="cap-3" class="hidden mt-2 text-gray-400 ps-4 border-s border-[#00ff66]/20 space-y-1">
+              <p data-key="summary-cap3-desc">Simulating load failures, heat dissipation profiles, and hardware-in-the-loop validation using custom signal simulation equipment designed directly in-house.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-[10px] text-emerald-700/80 font-mono mt-6 pt-3 border-t border-emerald-950 flex justify-between">
+        <span>SECURITY: CLEAR_A_LEVEL</span>
+        <span>FPGA_BOOT: ON</span>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE DIAGNOSTIC SCHEMATIC GRAPHIC -->
+    <section class="lg:col-span-12 ic-chip p-6 relative overflow-hidden">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">DIAGRAM // SYSTEM_GRID_VIEW</div>
+      <div class="absolute bottom-2 right-2 text-[8px] text-emerald-600/40 font-mono">⊕ REF_GRID_02</div>
+
+      <div class="mb-4 mt-2">
+        <h3 data-key="flows-header" class="font-silkscreen text-lg font-bold text-white tracking-widest flex items-center gap-2">
+          <span class="w-2 h-2 bg-[#00ff66] inline-block animate-pulse"></span> SYSTEM ARCHITECTURE FLOWS
+        </h3>
+        <p data-key="flows-desc" class="text-xs text-emerald-500/70">Click hardware nodes below to execute diagnostic address switching.</p>
+      </div>
+
+      <!-- Custom circuit block mapping -->
+      <div class="border border-emerald-950 bg-black/40 p-6 flex flex-col md:flex-row items-center justify-around gap-6 relative rounded">
+        <div class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(0,255,102,0.15),transparent_70%)]"></div>
+
+        <div onclick="routeTo('addr-identity')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
+          <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_01</div>
+          <span data-key="flows-btn1" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">ORGANIZATIONAL LAB</span>
+          <span data-key="flows-btn1-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Core design protocols</span>
+        </div>
+
+        <div class="hidden md:block text-emerald-800 text-lg flip-direction">━━━━━━━━►</div>
+
+        <div onclick="routeTo('addr-directory')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
+          <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_02</div>
+          <span data-key="flows-btn2" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">PROPRIETARY PRODUCTS</span>
+          <span data-key="flows-btn2-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Technical datasheets</span>
+        </div>
+
+        <div class="hidden md:block text-emerald-800 text-lg flip-direction">━━━━━━━━►</div>
+
+        <div onclick="routeTo('addr-uplink')" class="w-full md:w-1/4 border border-[#00ff66]/40 hover:border-[#00ff66] bg-[#020704] p-4 text-center cursor-pointer hover:bg-[#00ff66]/5 transition-all relative">
+          <div class="absolute top-1 start-1 text-[8px] text-emerald-500 font-mono">ADDR_03</div>
+          <span data-key="flows-btn3" class="block text-xs font-silkscreen text-[#00ff66] tracking-widest uppercase font-bold">SECURE CONNECTIONS</span>
+          <span data-key="flows-btn3-sub" class="text-[9px] text-gray-500 block font-mono mt-1">&gt; Fast contracting bus</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== ADDR_0x01: ORGANIZATIONAL IDENTITY (ABOUT) ==================== -->
+  <div id="addr-identity" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- MISSION-CRITICAL PHILOSOPHY CHIP -->
+    <section class="lg:col-span-6 ic-chip p-6 md:p-8 relative overflow-hidden">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MODULE // PHILOSOPHY</div>
+
+      <div class="space-y-6 mt-4">
+        <h3 data-key="about-hero-header" class="font-silkscreen text-xl font-bold text-white tracking-widest flex items-center gap-2">
+          <span class="w-2 h-2 bg-[#00ff66] inline-block animate-pulse"></span> DETERMINISTIC SECURITY & SAFETY BY DESIGN
+        </h3>
+
+        <div id="about-hero-body" class="border-s-2 border-emerald-500/30 ps-4 py-2 space-y-4 text-xs md:text-sm text-emerald-100/80 leading-relaxed font-light">
+          <!-- Translatable paragraphs managed by Javascript -->
+        </div>
+
+        <div class="bg-black/40 border border-emerald-950 p-4 rounded text-[11px] font-mono text-emerald-500/80 space-y-2">
+          <div data-key="about-codes-header" class="text-white font-bold">THE MICROMED COMPLIANCE CODES:</div>
+          <div data-key="about-codes-1">✓ Complete lack of garbage-collector latency vectors.</div>
+          <div data-key="about-codes-2">✓ Strict zero-cost hardware boundary abstractions.</div>
+          <div data-key="about-codes-3">✓ Full galvanic isolation separation standards across all sensitive buses.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE TEAM ARCHITECTURE BLUEPRINT -->
+    <section class="lg:col-span-6 ic-chip p-6 md:p-8 relative flex flex-col justify-between">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MODULE // TEAM_SCHEMATIC</div>
+
+      <div class="space-y-4 mt-4">
+        <h3 data-key="about-team-title" class="font-silkscreen text-xl font-bold text-white tracking-widest">
+          TEAM METASTATE BLUEPRINT
+        </h3>
+        <p data-key="about-team-desc" class="text-xs text-emerald-500/70 leading-relaxed">
+          Like an integrated circuit, our organizational architecture operates via synchronized, deterministic processing blocks. Click any functional group node below to interrogate credentials.
+        </p>
+
+        <!-- Interactive Team Nodes -->
+        <div class="space-y-3 pt-4">
+          <div onclick="selectTeamNode('silicon')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
+            <span data-key="team-cell-1" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_01]: SILICON_DESIGN_NODE</span>
+            <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
+          </div>
+          <div onclick="selectTeamNode('firmware')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
+            <span data-key="team-cell-2" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_02]: EMBEDDED_RUST_CORE</span>
+            <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
+          </div>
+          <div onclick="selectTeamNode('validation')" class="border border-emerald-950 bg-black/60 p-3 rounded cursor-pointer hover:border-emerald-500 transition-all flex justify-between items-center group">
+            <span data-key="team-cell-3" class="text-xs font-mono text-[#00ff66] group-hover:glow-text font-bold">[CELL_03]: HIL_STRESS_VALIDATION</span>
+            <span data-key="team-read-specs-btn" class="text-[9px] font-mono text-emerald-700">READ SPECS ►</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Node Readout -->
+        <div id="teamReadout" class="border border-[#00ff66]/20 bg-[#030504] p-4 rounded text-xs min-h-[100px] font-mono">
+          <span class="text-emerald-700 block text-[9px] font-bold">U1_CELL_READOUT</span>
+          <p data-key="team-readout-placeholder" class="text-emerald-100/60 mt-1">Select an organizational cell above to map team pipelines, technical credentials, and active system operations.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== ADDR_0x02: HARDWARE DIRECTORY (PRODUCTS) ==================== -->
+  <div id="addr-directory" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- DATASHEET SELECTOR MATRIX (LEFT) -->
+    <section class="lg:col-span-4 ic-chip p-6 relative flex flex-col justify-between">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">MATRIX // DIRECTORY</div>
+
+      <div class="space-y-6 mt-4">
+        <h3 data-key="dir-spec-title" class="font-silkscreen text-lg font-bold text-white tracking-widest">
+          SPEC_REGISTERS
+        </h3>
+        <p data-key="dir-spec-desc" class="text-xs text-emerald-500/70">
+          Query proprietary Micromed hardware blueprints. Select a model register to output high-fidelity data sheets directly from our firmware files:
+        </p>
+
+        <div class="space-y-2 font-mono text-xs">
+          <button onclick="selectProduct('MM-TC-01')" class="w-full text-start p-3 border border-emerald-500 bg-emerald-950/20 text-[#00ff66] hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-TC-01">
+            <span>MM-TC-01 THERMAL CARD</span>
+            <span data-key="dir-status-active" class="text-[9px] text-[#00ff66] font-bold">[ ACTIVE ]</span>
+          </button>
+          <button onclick="selectProduct('MM-MC-04')" class="w-full text-start p-3 border border-emerald-950 text-emerald-600 hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-MC-04">
+            <span>MM-MC-04 MOTOR DRIVER</span>
+            <span data-key="dir-status-locked" class="text-[9px] text-gray-500">[ LOCKED ]</span>
+          </button>
+          <button onclick="selectProduct('MM-ISO-02')" class="w-full text-start p-3 border border-emerald-950 text-emerald-600 hover:border-emerald-500/50 hover:bg-[#00ff66]/5 transition-all flex justify-between items-center" id="btn-prod-MM-ISO-02">
+            <span>MM-ISO-02 GALVANIC BUS</span>
+            <span data-key="dir-status-locked" class="text-[9px] text-gray-500">[ LOCKED ]</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-emerald-950 pt-4 mt-6 text-[9px] font-mono text-emerald-800">
+        <div>DATASHEETS COMPLIANCE CODE: ISO_13485_MED</div>
+      </div>
+    </section>
+
+    <!-- PROPRIETARY HARDWARE DATASHEET INTERFACE (RIGHT) -->
+    <section class="lg:col-span-8 ic-chip p-6 md:p-8 relative overflow-hidden">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest" id="datasheetDesignator">DATASHEET // MM-TC-01</div>
+
+      <!-- Dynamic Schematic Board visual container -->
+      <div class="border border-[#00ff66]/20 bg-black/60 p-6 rounded space-y-6" id="datasheetContent">
+        <!-- Dynamic datasheet templates are loaded through translations inside updateDatasheet() -->
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== ADDR_0x03: SECURE UPLINK (CONTACT) ==================== -->
+  <div id="addr-uplink" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- TERMINAL BLOCK INFORMATION -->
+    <section class="lg:col-span-5 ic-chip p-6 relative flex flex-col justify-between">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">INFO // UPLINK_PARAMETERS</div>
+
+      <div class="space-y-4 mt-4">
+        <h3 data-key="uplink-title" class="font-silkscreen text-xl font-bold text-white tracking-widest">
+          SECURE HARDWARE HANDSHAKE
+        </h3>
+        <p data-key="uplink-desc" class="text-xs text-emerald-100/60 leading-relaxed font-light">
+          Procurement managers and technical system architects can initiate a direct data bus uplink to request hardware contracting or embedded firmware optimization projects.
+        </p>
+
+        <div class="bg-black/40 border border-emerald-950 p-4 rounded text-[10px] font-mono text-emerald-500/80 space-y-1.5">
+          <div data-key="uplink-params-header" class="text-[#00ff66] font-bold">ACTIVE TRANSMITTER CHANNEL PARAMS:</div>
+          <div data-key="uplink-params-1">✓ CONFIG: PGP COMPLIANT ENCRYPTION MATRIX</div>
+          <div data-key="uplink-params-2">✓ SCHEMATIC DISPATCH TIMELINE: &lt; 24 HOURS</div>
+          <div data-key="uplink-params-3">✓ TECHNICAL ACCESS CLEARANCE: LEVEL_4 APPROVED</div>
+        </div>
+      </div>
+
+      <div class="border-t border-emerald-950 pt-4 mt-6 text-[9px] font-mono text-emerald-800">
+        <div>SECURE KEY: MM-RSA-4096</div>
+      </div>
+    </section>
+
+    <!-- B2B PROCUREMENT TERMINAL DIRECT FORM -->
+    <section class="lg:col-span-7 ic-chip p-6 relative overflow-hidden">
+      <div class="absolute top-2 right-3 text-[9px] text-emerald-600/60 font-mono tracking-widest">TRANSMITTER // BUS_0x03</div>
+
+      <!-- Circuit tracer visual accent running directly through the layout -->
+      <div class="absolute top-0 left-0 right-0 h-4 bg-[#00ff66]/10 flex justify-around items-center border-b border-emerald-950">
+        <span class="text-[8px] font-mono text-[#00ff66]">[GND]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[TX]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[RX]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[VCC]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[INT]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[I2C_SDA]</span>
+        <span class="text-[8px] font-mono text-[#00ff66]">[I2C_SCL]</span>
+      </div>
+
+      <div class="mt-6">
+        <form id="pcbContractForm" onsubmit="handleContractSubmission(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono relative z-10">
+          <div>
+            <label for="compName" data-key="form-label-company" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">OEM_COMPANY_IDENTIFIER</label>
+            <input type="text" id="compName" required placeholder="e.g. BIOSYNERGY_CORP" class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950">
+          </div>
+          <div>
+            <label for="compEmail" data-key="form-label-email" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">SECURE_COM_ROUTING</label>
+            <input type="email" id="compEmail" required placeholder="procurement@biosynergy.com" class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950">
+          </div>
+          <div class="sm:col-span-2">
+            <label for="compSpecs" data-key="form-label-specs" class="block text-[9px] text-emerald-500 uppercase mb-1 font-bold">BOARD_SPECS_AND_TELEMETRY_PARAMETERS</label>
+            <textarea id="compSpecs" rows="3" required placeholder="Detail temperature ranges, dynamic torque outputs, target PCB size limits or insulation standards..." class="w-full bg-black/80 border border-emerald-900/60 focus:border-[#00ff66] focus:outline-none p-3 text-white placeholder-emerald-950 resize-none"></textarea>
+          </div>
+          <div class="sm:col-span-2 flex justify-end">
+            <button id="form-submit-btn" type="submit" class="w-full sm:w-auto bg-[#00ff66]/10 border border-[#00ff66]/40 text-[#00ff66] font-silkscreen font-bold text-xs tracking-widest px-8 py-4 uppercase hover:bg-[#00ff66] hover:text-black transition-all duration-200 glow-border">
+              ESTABLISH DATA BUS MATRIX //
+            </button>
+          </div>
+        </form>
+
+        <!-- SIMULATED FIRMWARE TRANSMISSION PANEL -->
+        <div id="formSuccessMessage" class="hidden absolute inset-0 bg-black/95 flex flex-col justify-between p-6 border border-[#00ff66]">
+          <div class="space-y-4 font-mono text-xs">
+            <span data-key="success-headline" class="text-[#00ff66] text-sm font-silkscreen font-bold mb-2 block glow-text">UPLINK PACKET DEPLOYED [🟢]</span>
+            <div class="bg-black border border-emerald-950 p-4 rounded text-[10px] space-y-1 text-emerald-600">
+              <div data-key="success-log-1">&gt; Initiating RSA handshakes (MM-4096-B)... SUCCESS</div>
+              <div data-key="success-log-2">&gt; Compiling specifications block... COMPLETED</div>
+              <div data-key="success-log-3">&gt; Routing telemetry packets: IP_COM_SECURED</div>
+              <div data-key="success-log-4">&gt; Data bus written to memory array blocks.</div>
+            </div>
+            <p data-key="success-desc" class="text-xs text-emerald-100/70">
+              Hardware contracting packet received successfully. A systems engineering contractor stands notified to analyze physical parameters.
+            </p>
+          </div>
+          <button onclick="dismissFormNotification()" data-key="success-dismiss" class="text-xs font-mono text-[#00ff66] hover:underline self-start mt-4">[ CLEAR_LOG_REGISTERS ]</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER READOUT DIAGNOSTICS -->
+  <footer class="flex justify-between items-center text-[9px] font-mono text-emerald-700/80 border-t border-emerald-950/60 pt-4 pb-4">
+    <div data-key="footer-text">MICROMED TECHNOLOGY SYSTEMS // CORE MEMORY REG REGISTERS OPERATIONAL</div>
+    <div class="hidden sm:flex gap-6 tracking-wider">
+      <span>VCC: 3.30V [OK]</span>
+      <span>AMB_TEMPERATURE: 23.415°C</span>
+      <span data-key="footer-metric">TRACE_SENSITIVITY: HI-FI</span>
+    </div>
+  </footer>
 </div>
 
-<!-- CONSOLIDATED HIGH-FIDELITY JAVASCRIPT APPLICATION CODE -->
-<script>
-    // ==================== STATE MANAGEMENT ====================
-    let soundEngineCtx = null;
-    let isMuted = true;
-    let activeHoloKey = 'blue-pill';
-    let isHoloOrbiting = true;
-    let hYaw = 0.4;
-    let hPitch = -0.3;
-    let scaleFactor = 1.0;
-    let isDragging = false;
-    let previousMouseX = 0;
-    let previousMouseY = 0;
-    let entryCounter = 0;
-
-    // ==================== TRANSLATED SCHEMATICS / BLUEPRINTS ====================
-    const datasheetTemplates = {
-        en: {
-            "MM-TC-01": `
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-mono block">PART IDENTIFIER</span>
-                                <h4 class="font-silkscreen text-2xl text-white font-bold tracking-widest">MM-TC-01 // THERMO_MATRIX</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-mono font-bold uppercase">Revision 3.2</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-TC-01</span>
-                                <span class="text-[8px] text-emerald-500 block">PT100/1000 SPI FEEDBACK</span>
-                                <div class="absolute -left-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-4 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-8 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-4 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-8 w-1.5 h-1 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
-                            <div class="space-y-2 border-e border-emerald-950/80 pe-4">
-                                <span class="text-[#00ff66] block font-bold">// HARDWARE PARAMETERS</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Inputs</span>
-                                    <span class="text-white">8-Channel (PT100 / PT1000 Compatible)</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Dynamic Resolution</span>
-                                    <span class="text-white">0.0001°C Temperature delta</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Power Supply</span>
-                                    <span class="text-white">3.3V VCC Analog Line isolated</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Bus Interface</span>
-                                    <span class="text-white">Isolated SPI Bus up to 10MHz</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// FIRMWARE ARCHITECTURE</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    Driven by an embedded Rust \`no_std\` driver utilizing non-blocking DMA sweeps over the SPI bus. Zero allocation footprints ensure no memory heap overflow vectors during continuous operation.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `,
-            "MM-MC-04": `
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-mono block">PART IDENTIFIER</span>
-                                <h4 class="font-silkscreen text-2xl text-white font-bold tracking-widest">MM-MC-04 // ROTOR_VECTOR</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-mono font-bold uppercase">Revision 4.0</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-MC-04</span>
-                                <span class="text-[8px] text-emerald-500 block">3-PHASE FOC MOTOR DRIVER</span>
-                                <div class="absolute -bottom-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -bottom-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -bottom-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
-                            <div class="space-y-2 border-e border-emerald-950/80 pe-4">
-                                <span class="text-[#00ff66] block font-bold">// HARDWARE PARAMETERS</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Output Phase</span>
-                                    <span class="text-white">3-Phase Sensorless Vector</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Max Engine Velocity</span>
-                                    <span class="text-white">120,000 RPM Torque Adaptive</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Peak Current Limit</span>
-                                    <span class="text-white">45A Phase-to-Phase</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Safety Shunts</span>
-                                    <span class="text-white">Dual-Sense Viscosity Override</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// MOTOR CONTROLLER FIRMWARE</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    Integrates custom field-oriented control (FOC) formulas directly synthesized inside real-time bare-metal Rust tasks. Instantly detects viscosity peaks and dynamically adjusts current parameters to safeguard high-RPM laboratory mixing engines.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `,
-            "MM-ISO-02": `
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-mono block">PART IDENTIFIER</span>
-                                <h4 class="font-silkscreen text-2xl text-white font-bold tracking-widest">MM-ISO-02 // GALVANIC_SENTRY</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-mono font-bold uppercase">Revision 1.8</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-ISO-02</span>
-                                <span class="text-[8px] text-emerald-500 block">GALVANIC SHIELD BARRIER</span>
-                                <div class="absolute -left-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
-                            <div class="space-y-2 border-e border-emerald-950/80 pe-4">
-                                <span class="text-[#00ff66] block font-bold">// HARDWARE PARAMETERS</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Isolation Limit</span>
-                                    <span class="text-white">3.75kV Continuous RMS</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Data Throughput</span>
-                                    <span class="text-white">Up to 150 Mbps High-Speed</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Compliance Limit</span>
-                                    <span class="text-white">IEC 60601-1 Medical Standard</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">Propagation Delay</span>
-                                    <span class="text-white">&lt; 12ns Extreme Low Lag</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// SAFETY ISOLATION VECTOR</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    Engineered to physically isolate noisy power matrices (motors, induction elements) from micro-controller calculation nodes. Designed with optimized physical trace spacing to prevent electromagnetic arc-over on multi-layer controller boards.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-        },
-        fa: {
-            "MM-TC-01": `
-                    <div class="space-y-6" dir="rtl">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-sans block">شناسه قطعه سخت‌افزاری</span>
-                                <h4 class="font-sans text-2xl text-white font-bold tracking-widest">MM-TC-01 // ماتریس کنترل حرارتی</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-sans font-bold uppercase">نسخه ۳.۲</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-TC-01</span>
-                                <span class="text-[8px] text-emerald-500 block">PT100/1000 بازخورد ارتباطی SPI</span>
-                                <div class="absolute -left-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-4 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-8 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-4 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-8 w-1.5 h-1 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-sans">
-                            <div class="space-y-2 border-l border-emerald-950/80 pl-4">
-                                <span class="text-[#00ff66] block font-bold">// پارامترهای فنی سخت‌افزاری</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">کانال‌های ورودی</span>
-                                    <span class="text-white">۸ کانال مجزا (سازگار با سنسورهای PT100 / PT1000)</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">دقت تشخیص داینامیک</span>
-                                    <span class="text-white">تغییرات دمایی تا مقیاس بسیار دقیق ۰.۰۰۰۱ درجه سانتی‌گراد</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">ولتاژ مصرفی</span>
-                                    <span class="text-white">خط ۳.۳ ولت جریان آنالوگ فیلتر شده ایزوله</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">گذرگاه ارتباطی</span>
-                                    <span class="text-white">گذرگاه SPI ایزوله فرکانس بالا تا ۱۰ مگاهرتز</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// ساختار بهینه‌سازی میان‌افزار</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    راه‌اندازی کاملاً مستقل با کدهای سیستم‌عامل نوظهور Rust بدون بارگذاری متغیرهای موقتی. این پیکربندی طول عمر فرکانسی پردازنده را افزایش داده و مانع از سرریز حافظه در پردازش‌های مداوم می‌گردد.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `,
-            "MM-MC-04": `
-                    <div class="space-y-6" dir="rtl">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-sans block">شناسه قطعه سخت‌افزاری</span>
-                                <h4 class="font-sans text-2xl text-white font-bold tracking-widest">MM-MC-04 // بردار سرعت موتور</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-sans font-bold uppercase">نسخه ۴.۰</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-MC-04</span>
-                                <span class="text-[8px] text-emerald-500 block">سیستم کنترل موتور ۳ فاز مداربسته FOC</span>
-                                <div class="absolute -bottom-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -bottom-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -bottom-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-1/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-2/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                                <div class="absolute -top-1.5 left-3/4 w-0.5 h-1.5 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-sans">
-                            <div class="space-y-2 border-l border-emerald-950/80 pl-4">
-                                <span class="text-[#00ff66] block font-bold">// پارامترهای فنی سخت‌افزاری</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">سیستم خروجی</span>
-                                    <span class="text-white">۳ فاز با کنترل برداری پیشرفته بدون نیاز به سنسور فیزیکی</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">حداکثر دور موتور</span>
-                                    <span class="text-white">۱۲۰,۰۰۰ دور در دقیقه با کنترل تطبیقی گشتاور موتور</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">محدودیت جریان لحظه‌ای</span>
-                                    <span class="text-white">۴۵ آمپر فاز به فاز مدار فیلتر شده</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">سیستم‌های قطع اضطراری</span>
-                                    <span class="text-white">حفاظت آنی در زمان افزایش ناگهانی چسبندگی مواد خروجی</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// کدهای راه‌انداز تله‌متری موتور</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    محاسبه هوشمند برداری جریان مصرفی موتور مستقیماً در هسته ریزپردازنده بدون وقفه زمانی. این فناوری زمان خستگی متریال موتور را کاهش داده و ایمنی چرخش دور بالا را در دستگاه‌های صنعتی تضمین می‌نماید.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `,
-            "MM-ISO-02": `
-                    <div class="space-y-6" dir="rtl">
-                        <div class="flex justify-between items-start border-b border-emerald-950 pb-4">
-                            <div>
-                                <span class="text-xs text-emerald-600 font-sans block">شناسه قطعه سخت‌افزاری</span>
-                                <h4 class="font-sans text-2xl text-white font-bold tracking-widest">MM-ISO-02 // مانع گالوانیک فرکانس بالا</h4>
-                            </div>
-                            <span class="px-2 py-0.5 border border-amber-500/30 bg-amber-950/20 text-[#00ff66] text-[9px] font-sans font-bold uppercase">نسخه ۱.۸</span>
-                        </div>
-                        <div class="flex justify-center my-6">
-                            <div class="relative inline-block border-2 border-[#00ff66] bg-[#020704] p-4 text-center font-mono w-64">
-                                <span class="block text-xs text-white font-bold">MM-ISO-02</span>
-                                <span class="text-[8px] text-emerald-500 block">مانع تداخل الکترومغناطیسی مدار چاپی</span>
-                                <div class="absolute -left-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -left-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-2 w-1.5 h-1 bg-[#00ff66]"></div>
-                                <div class="absolute -right-1.5 top-6 w-1.5 h-1 bg-[#00ff66]"></div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-sans">
-                            <div class="space-y-2 border-l border-emerald-950/80 pl-4">
-                                <span class="text-[#00ff66] block font-bold">// پارامترهای فنی سخت‌افزاری</span>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">سقف ایزولاسیون ولتاژ</span>
-                                    <span class="text-white">۳.۷۵ کیلو ولت متناوب مستمر</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">پهنای باند داده خطوط</span>
-                                    <span class="text-white">انتقال فوق سریع سیگنال تا ۱۵۰ مگابیت بر ثانیه</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">تطبیق استاندارد ایمنی</span>
-                                    <span class="text-white">گرید پزشکی با عایق‌سازی خطرات شوک جریان</span>
-                                </div>
-                                <div class="flex justify-between border-b border-emerald-950/40 py-1">
-                                    <span class="text-gray-500">تاخیر انتشار پالس سیگنال</span>
-                                    <span class="text-white">تاخیر فوق‌العاده کم در مقیاس کمتر از ۱۲ نانوثانیه</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <span class="text-[#00ff66] block font-bold">// اهمیت استراتژیک ایزولاسیون مدار چاپی</span>
-                                <p class="text-emerald-100/60 leading-relaxed text-[11px]">
-                                    طراحی فیزیکی مجاری ایزوله روی برد جهت تفکیک مدارهای قدرت نویزساز (موتورها، رله‌ها) از پردازنده‌های حساس تله‌متری. طراحی فاصله فیزیکی امن برای جلوگیری از جهش‌های ناگهانی ولتاژ برق در بردهای لایه بالا.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-        }
-    };
-
-    const holoModels = {
-        "blue-pill": {
-            // Symmetrical STM32 Blue pill dev-board
-            vertices: [
-                // Main Board boundaries
-                {x:-50, y:-3, z:-100}, {x:50, y:-3, z:-100}, {x:50, y:-3, z:100}, {x:-50, y:-3, z:100},
-                // Microcontroller Chip package
-                {x:-20, y:-8, z:-20}, {x:20, y:-8, z:-20}, {x:20, y:-8, z:20}, {x:-20, y:-8, z:20},
-                // Micro USB module
-                {x:-15, y:-10, z:-105}, {x:15, y:-10, z:-105}, {x:15, y:-3, z:-95}, {x:-15, y:-3, z:-95},
-                // SMT Oscillator Crystal
-                {x:-8, y:-6, z:50}, {x:8, y:-6, z:50}, {x:8, y:-3, z:70}, {x:-8, y:-3, z:70}
-            ],
-            lines: [
-                [0,1], [1,2], [2,3], [3,0], // Board edge
-                [4,5], [5,6], [6,7], [7,4], // Main MCU Package
-                [8,9], [9,10], [10,11], [11,8], // USB metal
-                [12,13], [13,14], [14,15], [15,12] // Oscillator crystal
-            ]
-        },
-        "esp32": {
-            // SMT ESP32 Board
-            vertices: [
-                // Board edge
-                {x:-60, y:-3, z:-90}, {x:60, y:-3, z:-90}, {x:60, y:-3, z:90}, {x:-60, y:-3, z:90},
-                // ESP32 WROOM metal shield module
-                {x:-25, y:-8, z:-40}, {x:25, y:-8, z:-40}, {x:25, y:-8, z:30}, {x:-25, y:-8, z:30},
-                // USB-C Shield Interface on margin
-                {x:-18, y:-8, z:-95}, {x:18, y:-8, z:-95}, {x:18, y:-3, z:-85}, {x:-18, y:-3, z:-85},
-                // SMT boot buttons
-                {x:-45, y:-6, z:-75}, {x:-35, y:-6, z:-75}, {x:-35, y:-3, z:-65}, {x:-45, y:-3, z:-65}
-            ],
-            lines: [
-                [0,1], [1,2], [2,3], [3,0],
-                [4,5], [5,6], [6,7], [7,4],
-                [8,9], [9,10], [10,11], [11,8],
-                [12,13], [13,14], [14,15], [15,12]
-            ]
-        },
-        "triac": {
-            // BT136 TRIAC (TO-220 Package)
-            vertices: [
-                // Main Plastic Molded housing body
-                {x:-30, y:-45, z:-10}, {x:30, y:-45, z:-10}, {x:30, y:15, z:-10}, {x:-30, y:15, z:-10}, // front
-                {x:-30, y:-45, z:-25}, {x:30, y:-45, z:-25}, {x:30, y:15, z:-25}, {x:-30, y:15, z:-25}, // back
-                // Metal heatsink tab extending upwards
-                {x:-28, y:-45, z:-26}, {x:28, y:-45, z:-26}, {x:28, y:-75, z:-26}, {x:-28, y:-75, z:-26},
-                // Three detailed output parallel leads (pins) fanning downwards
-                {x:-20, y:15, z:-17}, {x:-20, y:75, z:-17}, // Pin 1
-                {x:0, y:15, z:-17}, {x:0, y:75, z:-17},     // Pin 2
-                {x:20, y:15, z:-17}, {x:20, y:75, z:-17}    // Pin 3
-            ],
-            lines: [
-                [0,1], [1,2], [2,3], [3,0], // front box
-                [4,5], [5,6], [6,7], [7,4], // back box
-                [0,4], [1,5], [2,6], [3,7], // box connections
-                [8,9], [9,10], [10,11], [11,8], // tab frame
-                [12,13], [14,15], [16,17] // pins
-            ]
-        },
-        "transistor": {
-            // TO-92 Transistor Package
-            vertices: [
-                // Front flat face
-                {x:-20, y:-30, z:-10}, {x:20, y:-30, z:-10}, {x:20, y:20, z:-10}, {x:-20, y:20, z:-10},
-                // Semicircular back face representation
-                {x:-15, y:-30, z:-25}, {x:15, y:-30, z:-25}, {x:15, y:20, z:-25}, {x:-15, y:20, z:-25},
-                // leads
-                {x:-15, y:20, z:-15}, {x:-15, y:70, z:-15},
-                {x:0, y:20, z:-15}, {x:0, y:70, z:-15},
-                {x:15, y:20, z:-15}, {x:15, y:70, z:-15}
-            ],
-            lines: [
-                [0,1], [1,2], [2,3], [3,0],
-                [4,5], [5,6], [6,7], [7,4],
-                [0,4], [1,5], [2,6], [3,7],
-                [8,9], [10,11], [12,13]
-            ]
-        },
-        "diode": {
-            // DO-41 Schottky Diode
-            vertices: [
-                // Symmetrical Cylindrical package body
-                {x:-15, y:-15, z:-40}, {x:15, y:-15, z:-40}, {x:15, y:15, z:-40}, {x:-15, y:15, z:-40}, // base 1
-                {x:-15, y:-15, z:40}, {x:15, y:-15, z:40}, {x:15, y:15, z:40}, {x:-15, y:15, z:40}, // base 2
-                // Cathode band marking rings
-                {x:-15, y:-15, z:-20}, {x:15, y:-15, z:-20}, {x:15, y:15, z:-20}, {x:-15, y:15, z:-20},
-                // Axial pins fanning through endpoints
-                {x:0, y:0, z:-40}, {x:0, y:0, z:-95},
-                {x:0, y:0, z:40}, {x:0, y:0, z:95}
-            ],
-            lines: [
-                [0,1], [1,2], [2,3], [3,0],
-                [4,5], [5,6], [6,7], [7,4],
-                [0,4], [1,5], [2,6], [3,7],
-                [8,9], [9,10], [10,11], [11,8], // cathode band
-                [12,13], [14,15]
-            ]
-        }
-    };
-
-    // ==================== DICTIONARIES & HELPER FUNCTIONS ====================
-    function initAudioEngine() {
-        if (!soundEngineCtx) {
-            soundEngineCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
-
-    function toggleMainboardAudio() {
-        initAudioEngine();
-        isMuted = !isMuted;
-        const toggleBtn = document.getElementById('synthToggle');
-        if (isMuted) {
-            toggleBtn.innerText = '[🔈 AUDIO_MUTED]';
-            toggleBtn.className = "text-[#00ff66] hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-emerald-950/60 bg-emerald-950/20 px-2 py-0.5";
-        } else {
-            toggleBtn.innerText = '[🔊 AUDIO_LIVE]';
-            toggleBtn.className = "text-white hover:text-white transition-colors uppercase font-bold text-[9px] flex items-center gap-1 border border-[#00ff66]/60 bg-[#00ff66]/10 px-2 py-0.5 glow-border";
-            playHardwareTone(659.25, 0.08);
-            setTimeout(() => playHardwareTone(987.77, 0.12), 80);
-        }
-    }
-
-    function playHardwareTone(freq, dur) {
-        if (isMuted) return;
-        initAudioEngine();
-        try {
-            const osc = soundEngineCtx.createOscillator();
-            const gain = soundEngineCtx.createGain();
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, soundEngineCtx.currentTime);
-
-            gain.gain.setValueAtTime(0.04, soundEngineCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, soundEngineCtx.currentTime + dur);
-
-            osc.connect(gain);
-            gain.connect(soundEngineCtx.destination);
-
-            osc.start();
-            osc.stop(soundEngineCtx.currentTime + dur);
-        } catch (err) {
-            console.log("Audio exception skipped.");
-        }
-    }
-
-    function updateDatasheet() {
-        const container = document.getElementById('datasheetContent');
-        const designator = document.getElementById('datasheetDesignator');
-
-        if (container) {
-            container.innerHTML = datasheetTemplates[currentLang][activeProductKey] || '';
-        }
-        if (designator) {
-            designator.innerText = `DATASHEET // ${activeProductKey}`;
-        }
-    }
-
-    function selectProduct(prodKey) {
-        playHardwareTone(659.25, 0.05);
-        activeProductKey = prodKey;
-
-        const productsList = ['MM-TC-01', 'MM-MC-04', 'MM-ISO-02'];
-
-        // Toggle datasheet selector buttons style
-        productsList.forEach(key => {
-            const btn = document.getElementById(`btn-prod-${key}`);
-            if (btn) {
-                btn.classList.remove('border-emerald-500', 'bg-emerald-950/20', 'text-[#00ff66]');
-                btn.classList.add('border-emerald-950', 'text-emerald-600');
-
-                const labelSpan = btn.querySelector('span:last-child');
-                if (labelSpan) {
-                    labelSpan.innerText = translations[currentLang]["dir-status-locked"];
-                    labelSpan.className = 'text-[9px] text-gray-500';
-                }
-            }
-        });
-
-        const activeBtn = document.getElementById(`btn-prod-${prodKey}`);
-        if (activeBtn) {
-            activeBtn.classList.add('border-emerald-500', 'bg-emerald-950/20', 'text-[#00ff66]');
-            activeBtn.classList.remove('border-emerald-950', 'text-emerald-600');
-
-            const labelSpan = activeBtn.querySelector('span:last-child');
-            if (labelSpan) {
-                labelSpan.innerText = translations[currentLang]["dir-status-active"];
-                labelSpan.className = 'text-[9px] text-[#00ff66] font-bold';
-            }
-        }
-
-        updateDatasheet();
-    }
-
-    // ==================== BACKGROUND PCB GENERATOR ====================
-    const pcbCanvas = document.getElementById('pcbBackgroundCanvas');
-    const pcbCtx = pcbCanvas.getContext('2d');
-
-    function compilePCBLayout() {
-        pcbCanvas.width = window.innerWidth;
-        pcbCanvas.height = window.innerHeight;
-        drawStaticPCB();
-    }
-
-    function layoutPCBSubstrate() {
-        compilePCBLayout();
-    }
-
-    function drawStaticPCB() {
-        const w = pcbCanvas.width;
-        const h = pcbCanvas.height;
-        pcbCtx.clearRect(0, 0, w, h);
-
-        // 1. Draw coordinate grid backing
-        pcbCtx.strokeStyle = 'rgba(0, 255, 102, 0.015)';
-        pcbCtx.lineWidth = 0.5;
-        const gridSize = 40;
-        for (let x = 0; x < w; x += gridSize) {
-            pcbCtx.beginPath(); pcbCtx.moveTo(x, 0); pcbCtx.lineTo(x, h); pcbCtx.stroke();
-        }
-        for (let y = 0; y < h; y += gridSize) {
-            pcbCtx.beginPath(); pcbCtx.moveTo(0, y); pcbCtx.lineTo(w, y); pcbCtx.stroke();
-        }
-
-        // Helper for routing thick busses
-        const drawTraceArray = (startX, startY, count, spacing, segments) => {
-            pcbCtx.lineWidth = 1;
-            for (let i = 0; i < count; i++) {
-                pcbCtx.strokeStyle = i % 2 === 0 ? 'rgba(0, 255, 102, 0.08)' : 'rgba(0, 243, 255, 0.05)';
-                pcbCtx.beginPath();
-                let curX = startX + i * spacing;
-                let curY = startY;
-                pcbCtx.moveTo(curX, curY);
-
-                for (let seg of segments) {
-                    const rad = (seg.angle * Math.PI) / 180;
-                    curX += seg.length * Math.cos(rad);
-                    curY += seg.length * Math.sin(rad);
-                    pcbCtx.lineTo(curX, curY);
-                }
-                pcbCtx.stroke();
-
-                // Endpoint Via solder pad
-                pcbCtx.fillStyle = 'rgba(0, 255, 102, 0.2)';
-                pcbCtx.beginPath();
-                pcbCtx.arc(curX, curY, 3, 0, Math.PI * 2);
-                pcbCtx.fill();
-            }
-        };
-
-        // Draw extremely dense CAD trace modules in all corners + centers
-        // Top Left Fanout
-        drawTraceArray(100, 0, 10, 8, [
-            { angle: 90, length: 120 },
-            { angle: 45, length: 100 },
-            { angle: 90, length: 200 }
-        ]);
-
-        // Top Right Parallel Data Bus
-        drawTraceArray(w - 300, 0, 12, 6, [
-            { angle: 90, length: 150 },
-            { angle: 135, length: 120 },
-            { angle: 90, length: h * 0.3 }
-        ]);
-
-        // Bottom Center Power Plane Trace Arrays
-        drawTraceArray(w * 0.35, h, 14, 12, [
-            { angle: 270, length: h * 0.2 },
-            { angle: 315, length: 140 },
-            { angle: 270, length: 100 }
-        ]);
-
-        // Left Margin Diagnostic Tracks
-        drawTraceArray(0, h * 0.3, 8, 10, [
-            { angle: 0, length: 120 },
-            { angle: 45, length: 80 },
-            { angle: 0, length: 150 }
-        ]);
-
-        // Right Margin High Frequency Loops
-        drawTraceArray(w, h * 0.5, 9, 8, [
-            { angle: 180, length: 150 },
-            { angle: 225, length: 100 },
-            { angle: 180, length: h * 0.2 }
-        ]);
-
-        // Draw massive microchip physical silicon outline in background center
-        pcbCtx.strokeStyle = 'rgba(0, 255, 102, 0.04)';
-        pcbCtx.lineWidth = 2;
-        const chipX = w / 2 - 250;
-        const chipY = h / 2 - 250;
-        pcbCtx.strokeRect(chipX, chipY, 500, 500);
-
-        // Chip breakout pins radiating into board substrate
-        pcbCtx.strokeStyle = 'rgba(0, 255, 102, 0.06)';
-        pcbCtx.lineWidth = 0.5;
-        for (let offset = 0; offset < 500; offset += 20) {
-            // Top legs fanning
-            pcbCtx.beginPath(); pcbCtx.moveTo(chipX + offset, chipY); pcbCtx.lineTo(chipX + offset - 40, chipY - 40); pcbCtx.stroke();
-            // Bottom legs fanning
-            pcbCtx.beginPath(); pcbCtx.moveTo(chipX + offset, chipY + 500); pcbCtx.lineTo(chipX + offset + 40, chipY + 540); pcbCtx.stroke();
-            // Left legs fanning
-            pcbCtx.beginPath(); pcbCtx.moveTo(chipX, chipY + offset); pcbCtx.lineTo(chipX - 40, chipY + offset - 40); pcbCtx.stroke();
-            // Right legs fanning
-            pcbCtx.beginPath(); pcbCtx.moveTo(chipX + 500, chipY + offset); pcbCtx.lineTo(chipX + 540, chipY + offset + 40); pcbCtx.stroke();
-        }
-    }
-
-    // ==================== INTERACTIVE 3D HOLOGRAM EXPLORER PORTAL ====================
-    const holoCanvas = document.getElementById('hologramViewer3D');
-    const holoCtx = holoCanvas.getContext('2d');
-
-    holoCanvas.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        isHoloOrbiting = false;
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
-    });
-
-    window.addEventListener('mouseup', () => { isDragging = false; });
-
-    holoCanvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const deltaX = e.clientX - previousMouseX;
-        const deltaY = e.clientY - previousMouseY;
-        hYaw += deltaX * 0.01;
-        hPitch += deltaY * 0.01;
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
-
-        // Constrain pitch to avoid flipping over axis boundaries
-        hPitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, hPitch));
-
-        document.getElementById('holoYaw').innerText = hYaw.toFixed(2);
-        document.getElementById('holoPitch').innerText = hPitch.toFixed(2);
-    });
-
-    // Touch support for dragging on mobile viewports
-    holoCanvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 0) return;
-        isDragging = true;
-        isHoloOrbiting = false;
-        previousMouseX = e.touches[0].clientX;
-        previousMouseY = e.touches[0].clientY;
-    });
-    holoCanvas.addEventListener('touchend', () => { isDragging = false; });
-    holoCanvas.addEventListener('touchmove', (e) => {
-        if (!isDragging || e.touches.length === 0) return;
-        const t = e.touches[0];
-        const deltaX = t.clientX - previousMouseX;
-        const deltaY = t.clientY - previousMouseY;
-        hYaw += deltaX * 0.015;
-        hPitch += deltaY * 0.015;
-        previousMouseX = t.clientX;
-        previousMouseY = t.clientY;
-        hPitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, hPitch));
-    });
-
-    function toggleHoloOrbit() {
-        isHoloOrbiting = !isHoloOrbiting;
-        const btn = document.getElementById('holoOrbitBtn');
-        btn.innerText = isHoloOrbiting ? 'AUTO_ROT: ON' : 'AUTO_ROT: OFF';
-        playHardwareTone(659.25, 0.05);
-    }
-
-    function selectHoloModel(key) {
-        playHardwareTone(784, 0.06);
-        activeHoloKey = key;
-        const btnMap = ['blue-pill', 'esp32', 'triac', 'transistor', 'diode'];
-        btnMap.forEach(k => {
-            const btn = document.getElementById(`btn-holo-${k}`);
-            if (btn) {
-                btn.className = "py-1.5 px-2 text-[9px] font-mono border border-emerald-900 text-emerald-600 hover:border-cyan-500 hover:text-cyan-400";
-            }
-        });
-        const activeBtn = document.getElementById(`btn-holo-${key}`);
-        if (activeBtn) {
-            activeBtn.className = "py-1.5 px-2 text-[9px] font-mono border border-cyan-500 bg-cyan-950/20 text-[#00f3ff] font-bold";
-        }
-        document.getElementById('holoModelName').innerText = `MM-${key.toUpperCase()}`;
-    }
-
-    function resizeHologramCanvas() {
-        holoCanvas.width = holoCanvas.parentElement.clientWidth;
-        holoCanvas.height = holoCanvas.parentElement.clientHeight || 240;
-    }
-
-    function project3DHoloNode(x, y, z, w, h) {
-        // 3D Matrix Rotations
-        // 1. Yaw rotation around Y axis
-        const cosY = Math.cos(hYaw);
-        const sinY = Math.sin(hYaw);
-        const x1 = x * cosY - z * sinY;
-        const z1 = x * sinY + z * cosY;
-
-        // 2. Pitch rotation around X axis
-        const cosP = Math.cos(hPitch);
-        const sinP = Math.sin(hPitch);
-        const y2 = y * cosP - z1 * sinP;
-        const z2 = y * sinP + z1 * cosP;
-
-        // Perspective factor
-        const dist = 320;
-        const scale = dist / (dist + z2);
-
-        return {
-            x: (w / 2) + x1 * scale * scaleFactor,
-            y: (h / 2) + y2 * scale * scaleFactor,
-            scale: scale
-        };
-    }
-
-    function renderHologramFrame() {
-        holoCtx.clearRect(0, 0, holoCanvas.width, holoCanvas.height);
-        const w = holoCanvas.width;
-        const h = holoCanvas.height;
-
-        if (isHoloOrbiting) {
-            hYaw += 0.008; // Ambient rotation on idle state
-        }
-
-        const activeModel = holoModels[activeHoloKey];
-        if (activeModel) {
-            // Render volumetric background depth grid circles inside viewport
-            holoCtx.strokeStyle = 'rgba(0, 243, 255, 0.02)';
-            holoCtx.lineWidth = 1;
-            for (let r = 50; r <= 200; r += 50) {
-                holoCtx.beginPath();
-                holoCtx.arc(w/2, h/2 + 20, r, 0, Math.PI*2);
-                holoCtx.stroke();
-            }
-
-            // Draw wireframe vector connections in 3D
-            holoCtx.strokeStyle = '#00f3ff';
-            holoCtx.lineWidth = 1.4;
-            holoCtx.shadowColor = '#00f3ff';
-
-            activeModel.lines.forEach(pair => {
-                const v1 = activeModel.vertices[pair[0]];
-                const v2 = activeModel.vertices[pair[1]];
-
-                if (v1 && v2) {
-                    const p1 = project3DHoloNode(v1.x, v1.y, v1.z, w, h);
-                    const p2 = project3DHoloNode(v2.x, v2.y, v2.z, w, h);
-
-                    holoCtx.beginPath();
-                    holoCtx.moveTo(p1.x, p1.y);
-                    holoCtx.lineTo(p2.x, p2.y);
-
-                    // Set volumetric trace gradient opacity by projected depth scale
-                    holoCtx.strokeStyle = `rgba(0, 243, 255, ${Math.min(1.0, 0.2 + p1.scale * 0.7)})`;
-                    holoCtx.stroke();
-                }
-            });
-
-            // Highlight intersections / mounting pins (Vias)
-            activeModel.vertices.forEach(v => {
-                const p = project3DHoloNode(v.x, v.y, v.z, w, h);
-                holoCtx.fillStyle = '#00ff66';
-                holoCtx.beginPath();
-                holoCtx.arc(p.x, p.y, 3 * p.scale, 0, Math.PI * 2);
-                holoCtx.fill();
-            });
-        }
-
-        requestAnimationFrame(renderHologramFrame);
-    }
-
-    // ==================== APP LIFECYCLE LISTENERS ====================
-    window.addEventListener('resize', () => {
-        layoutPCBSubstrate();
-        resizeHologramCanvas();
-    });
-
-    // Initialize HUD bindings & Run Hologram and Background loops
-    layoutPCBSubstrate();
-    resizeHologramCanvas();
-    renderHologramFrame();
-</script>
+    <script type="module" src="./script.ts"></script>
 </body>
 </html>
