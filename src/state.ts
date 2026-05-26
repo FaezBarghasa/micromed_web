@@ -1,0 +1,22 @@
+export let currentLang: 'en' | 'fa' = 'en';
+export let isMuted = true;
+export let activeHoloKey: 'blue-pill' | 'esp32' | 'triac' | 'transistor' | 'diode' = 'blue-pill';
+export let isHoloOrbiting = true;
+export let hYaw = 0.4;
+export let hPitch = -0.3;
+export const scaleFactor = 1.0;
+export let isDragging = false;
+export let previousMouseX = 0;
+export let previousMouseY = 0;
+export let activeProductKey = 'MM-TC-01';
+
+export function setCurrentLang(lang: 'en' | 'fa') { currentLang = lang; }
+export function setIsMuted(muted: boolean) { isMuted = muted; }
+export function setActiveHoloKey(key: 'blue-pill' | 'esp32' | 'triac' | 'transistor' | 'diode') { activeHoloKey = key; }
+export function setIsHoloOrbiting(orbit: boolean) { isHoloOrbiting = orbit; }
+export function setHYaw(yaw: number) { hYaw = yaw; }
+export function setHPitch(pitch: number) { hPitch = pitch; }
+export function setIsDragging(dragging: boolean) { isDragging = dragging; }
+export function setPreviousMouseX(x: number) { previousMouseX = x; }
+export function setPreviousMouseY(y: number) { previousMouseY = y; }
+export function setActiveProductKey(key: string) { activeProductKey = key; }
